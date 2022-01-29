@@ -563,11 +563,6 @@ export class Network {
     return weighted_net;
   }
 
-  // TODO: BFS
-
-  // TODO:
-  // - [] closenessCentrality
-
   /**
    * Creates a [k-core](https://www.wikiwand.com/en/Degeneracy_(graph_theory)) decomposition of a network.
    * @param  {number} k
@@ -608,7 +603,7 @@ export class Network {
 
     const { vertices, edges } = k2;
 
-    edges.forEach((edge, key) => {
+    edges.forEach((edge) => {
       const { from, to } = edge.vertices;
       vertices.forEach((vertex) => {
         const { id } = vertex;
@@ -661,7 +656,6 @@ export class Network {
     edge_b: EdgeArgs,
     is_directed = this.is_directed
   ): boolean {
-    // TODO: multigraph -> edge needs to have the same id
     if (edge_a.from === edge_b.from && edge_a.to === edge_b.to) return true;
     else if (
       edge_a.to === edge_b.from &&
