@@ -104,9 +104,3 @@ function parseCSV(csv_file: string[]): ParsedCSV {
 
   return parsed_csv;
 }
-
-/*
-TODO:
-- [] write to csv
-- [] read from csv
-*/

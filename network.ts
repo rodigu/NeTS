@@ -28,8 +28,8 @@ export class Network {
     this.edges = new Map();
     this.vertices = new Map();
     this.is_directed = args.is_directed ?? false;
-    this.edge_limit = args.edge_limit ?? 500;
-    this.vertex_limit = args.vertex_limit ?? 500;
+    this.vertex_limit = args.vertex_limit ?? 1500;
+    this.edge_limit = args.edge_limit ?? 2500;
     this.free_eid = 0;
     this.free_vid = 0;
     this.is_multigraph = false;
@@ -157,11 +157,11 @@ export class Network {
   }
 
   /**
-   * Add multiple edges from a list of EdgeArgs.
-   * @param  {EdgeArgs[]} edge_list
+   * Add multiple edges from a list of [base_id, base_id].
+   * @param  {[base_id][]} edge_list
    */
-  addEdgeList(edge_list: EdgeArgs[]) {
-    edge_list.forEach((edge_args) => this.addEdge(edge_args));
+  addEdgeList(edge_list: [base_id, base_id][]) {
+    edge_list.forEach((edge) => this.addEdge({ from: edge[0], to: edge[1] }));
   }
 
   /**
@@ -174,13 +174,6 @@ export class Network {
    * @param  {base_id} [args.id]
    */
   removeEdge(args: { from: base_id; to: base_id; id?: base_id }) {
-    if (args.id !== undefined) {
-      this.removeMultigraphEdge(args.id);
-      return;
-    } else if (this.is_multigraph) {
-      throw { message: ERROR.UNDEFINED_ID, id: args.id };
-    }
-
     this.edges.forEach(({ vertices }, id) => {
       if (this.checkEdgeIsSame(vertices, args)) {
         this.edges.delete(id);
@@ -630,20 +623,32 @@ export class Network {
     return id;
   }
 
+  /**
+   * Checks if a list of triplets contains a certain triplet
+   * @param  {Triplet[]} triplet_arr
+   * @param  {Triplet} triplet
+   * @returns boolean
+   */
   private listHasTriplet(triplet_arr: Triplet[], triplet: Triplet): boolean {
-    return !!triplet_arr.find((trip) => this.isSameTriplet(triplet, trip));
+    return triplet_arr.some((trip) => this.isSameTriplet(triplet, trip));
   }
 
+  /**
+   * Compares two triplets (directed), returns whether they are the same.
+   * @param  {Triplet} arr1
+   * @param  {Triplet} arr2
+   * @returns boolean
+   */
   private isSameTriplet(arr1: Triplet, arr2: Triplet): boolean {
     if (arr1.length !== arr2.length) return false;
     return arr1.every((element, index) => element === arr2[index]);
   }
 
-  private removeMultigraphEdge(id: base_id) {
-    this.edges.delete(id);
-  }
-
-  private newEID() {
+  /**
+   * Generates a new ID for an edge being generated.
+   * @returns number
+   */
+  private newEID(): number {
     let id = this.free_eid++;
     while (this.edges.has(id)) {
       id = Math.floor(Math.random() * this.edge_limit);
@@ -651,6 +656,13 @@ export class Network {
     return id;
   }
 
+  /**
+   * Checks if the two given edges are the same.
+   * @param  {EdgeArgs} edge_a
+   * @param  {EdgeArgs} edge_b
+   * @param  {Boolean} [is_directed=this.is_directed]
+   * @returns boolean
+   */
   private checkEdgeIsSame(
     edge_a: EdgeArgs,
     edge_b: EdgeArgs,

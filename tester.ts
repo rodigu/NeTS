@@ -1,4 +1,4 @@
-import * as nets from "./ne.ts";
+import * as nets from "./mod.ts";
 
 const start_time = new Date().getTime();
 
