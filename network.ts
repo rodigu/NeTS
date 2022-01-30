@@ -165,6 +165,14 @@ export class Network {
   }
 
   /**
+   * Add multiple edges from a list of [base_id, base_id].
+   * @param  {EdgeArgs[]} edge_list
+   */
+  addEdgeListArgs(edge_args: EdgeArgs[]) {
+    edge_args.forEach((edge) => this.addEdge(edge));
+  }
+
+  /**
    * Removes an edge between the two given vertices.
    *
    * If the network is a multigraph, an ID is needed to remove a specific edge.
