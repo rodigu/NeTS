@@ -611,7 +611,7 @@ export class Network {
         if (edge.hasVertex(id)) return;
         const triplet: Triplet = [id, from, to];
         if (k2.isSameTriplet(triplet, triplet.sort()))
-          if (k2.hasEdge(id, from, false) && k2.hasEdge(id, to, false))
+          if (k2.hasEdge(id, from, true) && k2.hasEdge(id, to, true))
             triplet_list.push(triplet);
       });
     });

@@ -1,0 +1,15 @@
+--Values Test--
+Weight:                496
+Genus:                 1420
+Clique Size:           122760
+Density:               0.015599543825350276
+Clustering for ETH:    0.03397112233147311
+
+--Algorithms Tests--
+10-core decomposition vertice number: 35
+10-core decomposition edge number: 298
+Number of triplets: 3620
+10 triplets sample: BNB,ETH,LTC,BTC,ETH,LTC,ETH,LTC,TUSD,ETH,LTC,PAX,ETH,LTC,USDC,BUSD,ETH,LTC,ETH,LTC,USDT,ETH,EUR,LTC,ETH,GBP,LTC,ETH,LTC,NGN
+Triplets algorithm time: 26.547
+
+Elapsed time: 27.016

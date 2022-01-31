@@ -1,3 +1,4 @@
+// deno run --allow-read --allow-write tester.ts
 import * as nets from "./mod.ts";
 
 const start_time = new Date().getTime();
