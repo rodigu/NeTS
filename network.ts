@@ -412,13 +412,13 @@ export class Network {
    * @returns number
    */
   averageDegree(id: base_id): number {
-    let vertex_assortativity = 0;
+    let neighbor_degree_sum = 0;
 
     this.neighbors(id).forEach((neighbor_id) => {
-      vertex_assortativity += this.degree(neighbor_id);
+      neighbor_degree_sum += this.degree(neighbor_id);
     });
 
-    return vertex_assortativity / this.degree(id);
+    return neighbor_degree_sum / this.degree(id);
   }
 
   /**
