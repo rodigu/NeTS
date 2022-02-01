@@ -425,7 +425,7 @@ export class Network {
    * Performs the given operation over the two vertices of all edges and returns the average.
    * @param  {(from:base_id,to:base_id)=>number} operation
    */
-  degreeEdgeOperation(operation: (vertices: EdgeArgs) => number) {
+  edgeAverageOperation(operation: (vertices: EdgeArgs) => number) {
     let total = 0;
     this.edges.forEach(({ vertices }) => (total += operation(vertices)));
 
@@ -436,7 +436,7 @@ export class Network {
    * Performs the given operation over the two vertices of all edges and returns the average.
    * @param  {(from:base_id,to:base_id)=>number} operation
    */
-  degreeEdgeOperationList(operations: Array<(vertices: EdgeArgs) => number>) {
+  edgeAverageOperationList(operations: Array<(vertices: EdgeArgs) => number>) {
     let totals = new Array(operations.length).fill(0);
     this.edges.forEach(
       ({ vertices }) =>
@@ -454,7 +454,7 @@ export class Network {
    * @returns number
    */
   assortativity(): number {
-    const [edge_multi, edge_sum, edge_sqr_sum] = this.degreeEdgeOperationList([
+    const [edge_multi, edge_sum, edge_sqr_sum] = this.edgeAverageOperationList([
       ({ from, to }) => this.degree(from) * this.degree(to),
       ({ from, to }) => this.degree(from) + this.degree(to),
       ({ from, to }) => this.degree(from) ** 2 + this.degree(to) ** 2,
