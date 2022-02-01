@@ -407,20 +407,62 @@ export class Network {
   }
 
   /**
-   * [Assortativity](https://www.wikiwand.com/en/Assortativity) of a given vertex.
+   * Average degree of a given vertex.
    * @param  {base_id} id
    * @returns number
    */
-  assortativity(id: base_id): number {
+  averageDegree(id: base_id): number {
     let vertex_assortativity = 0;
 
-    this.edges.forEach(({ vertices }) => {
-      const { from, to } = vertices;
-      if (from === id) vertex_assortativity += this.degree(to);
-      else if (to === id) vertex_assortativity += this.degree(from);
+    this.neighbors(id).forEach((neighbor_id) => {
+      vertex_assortativity += this.degree(neighbor_id);
     });
 
     return vertex_assortativity / this.degree(id);
+  }
+
+  /**
+   * Performs the given operation over the two vertices of all edges and returns the average.
+   * @param  {(from:base_id,to:base_id)=>number} operation
+   */
+  degreeEdgeOperation(operation: (vertices: EdgeArgs) => number) {
+    let total = 0;
+    this.edges.forEach(({ vertices }) => (total += operation(vertices)));
+
+    return total / this.edges.size;
+  }
+
+  /**
+   * Performs the given operation over the two vertices of all edges and returns the average.
+   * @param  {(from:base_id,to:base_id)=>number} operation
+   */
+  degreeEdgeOperationList(operations: Array<(vertices: EdgeArgs) => number>) {
+    let totals = new Array(operations.length).fill(0);
+    this.edges.forEach(
+      ({ vertices }) =>
+        (totals = totals.map(
+          (total, index) => (total += operations[index](vertices))
+        ))
+    );
+
+    return totals.map((total) => total / this.edges.size);
+  }
+
+  /**
+   * [Assortativity](https://storage.googleapis.com/plos-corpus-prod/10.1371/journal.pone.0008090/1/pone.0008090.s001.pdf?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=wombat-sa%40plos-prod.iam.gserviceaccount.com%2F20220201%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20220201T012508Z&X-Goog-Expires=86400&X-Goog-SignedHeaders=host&X-Goog-Signature=525560a6254f5c978b9405a251534227f2f456692efcfe35f50b3716fee077481f914c530ed7545fe2d58f685cd98b22a31a874b419921cdd3ba2713c946a6ff60e69953a8ce304412618072f2cf8c58fa556f43a0c54197644a8405b219d29f59f27c4346261d0e1409e933984724af4171826ebc5039a5759366de138019bb7f56d08f91d5ec1f55dbb32428515fd011c1d8fb07c3d16614e7f6db0cad43501d96fd7ed48549d3977e5599c430ca6562d227e35455023e580abd8bb66c9277a42c52d628d8b675967d9cfb9754e1b80b6af60ea8373c72a2194d4a66d17bffe570751bb62e8eb2563c036150c063393b058758d9e599cd32a13ed17fc143bb) of a given vertex.
+   * @param  {base_id} id
+   * @returns number
+   */
+  assortativity(): number {
+    const [edge_multi, edge_sum, edge_sqr_sum] = this.degreeEdgeOperationList([
+      ({ from, to }) => this.degree(from) * this.degree(to),
+      ({ from, to }) => this.degree(from) + this.degree(to),
+      ({ from, to }) => this.degree(from) ** 2 + this.degree(to) ** 2,
+    ]);
+
+    return (
+      (4 * edge_multi - edge_sum ** 2) / (2 * edge_sqr_sum - edge_sum ** 2)
+    );
   }
 
   /**
