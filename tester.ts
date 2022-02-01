@@ -1,4 +1,7 @@
-// deno run --allow-read --allow-write tester.ts
+/*
+deno run --allow-read --allow-write tester.ts
+*/
+
 import * as nets from "./mod.ts";
 
 const start_time = new Date().getTime();
@@ -39,9 +42,15 @@ function algorithmTest(network: nets.Network) {
   test_string += `10 triplets sample: ${triplets.filter(
     (value, index) => index < 10
   )}\n`;
-  test_string += `Triplets algorithm time: ${
+  test_string += `  -triplets algorithm time: ${
     (triplets_end_time - triplets_start_time) / 1000
   }\n`;
+
+  const assortativity_start = new Date().getTime();
+  test_string += `Network assortativity: ${network.assortativity()}\n`;
+  test_string += `  -time taken: ${
+    (new Date().getTime() - assortativity_start) / 1000
+  }`;
 
   return test_string;
 }
@@ -58,6 +67,7 @@ function getTestTime(): string {
     date.getHours()
   );
 }
+
 const net_csv = await nets.loadAdjacencyMatrix("./data/networkMatrix.csv");
 
 let test_data = valuesTest(net_csv) + "\n" + algorithmTest(net_csv);
