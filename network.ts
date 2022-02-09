@@ -648,8 +648,7 @@ export class Network {
 
     edges.forEach((edge) => {
       const { from, to } = edge.vertices;
-      vertices.forEach((vertex) => {
-        const { id } = vertex;
+      k2.neighbors(from).forEach((id) => {
         if (edge.hasVertex(id)) return;
         const triplet: Triplet = [id, from, to];
         if (k2.isSameTriplet(triplet, triplet.sort()))
