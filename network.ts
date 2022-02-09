@@ -16,6 +16,8 @@ export class Network {
   readonly is_directed: boolean;
   readonly is_multigraph: boolean;
 
+  readonly [key: string]: any;
+
   private edge_limit: number;
   private vertex_limit: number;
   private free_eid: number;
