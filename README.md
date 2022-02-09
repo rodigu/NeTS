@@ -5,6 +5,7 @@
 ## NeTS
 
 NeTS is a TypeScript Graph Theory/Network Science library.
+Latest release can also be found at https://deno.land/x/nets@v0.2.3
 
 Import it using the Deno import:
 
