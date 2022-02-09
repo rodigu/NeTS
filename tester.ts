@@ -6,6 +6,18 @@ import * as nets from "./mod.ts";
 
 const start_time = new Date().getTime();
 
+export async function testSpeed(
+  network: nets.Network,
+  algo: string,
+  params: any
+) {
+  const start_time = new Date().getTime();
+  await network[algo](params);
+  const end_time = new Date().getTime();
+  const elapsed_time = (end_time - start_time) / 1000;
+  console.log("Time taken: ", elapsed_time);
+}
+
 function logNetwork(network: nets.Network) {
   return (
     "\n" +
@@ -77,4 +89,7 @@ const elapsed_time = (end_time - start_time) / 1000;
 
 test_data += "\nElapsed time: " + elapsed_time;
 
-Deno.writeTextFile(`./data/test_${getTestTime()}.txt`, test_data);
+Deno.writeTextFile(
+  `./data/test_${getTestTime()}_${Math.floor(200 * Math.random())}.txt`,
+  test_data
+);
