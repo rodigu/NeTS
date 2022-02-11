@@ -16,6 +16,8 @@ export class Network {
   readonly is_directed: boolean;
   readonly is_multigraph: boolean;
 
+  readonly [key: string]: any;
+
   private edge_limit: number;
   private vertex_limit: number;
   private free_eid: number;
@@ -652,8 +654,7 @@ export class Network {
         if (edge.hasVertex(id)) return;
         const triplet: Triplet = [id, ...[from, to].sort()];
         if (k2.isSameTriplet(triplet, triplet.sort()))
-          if (k2.hasEdge(id, from, true) && k2.hasEdge(id, to, true))
-            triplet_list.push(triplet);
+          if (k2.hasEdge(id, to, true)) triplet_list.push(triplet);
       });
     });
 
