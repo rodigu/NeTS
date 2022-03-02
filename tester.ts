@@ -3,6 +3,7 @@ deno run --allow-read --allow-write tester.ts
 */
 
 import * as nets from "./mod.ts";
+import * as nex from "./extra.ts";
 
 const start_time = new Date().getTime();
 
@@ -80,7 +81,7 @@ function getTestTime(): string {
   );
 }
 
-const net_csv = await nets.loadAdjacencyMatrix("./data/networkMatrix.csv");
+const net_csv = await nex.loadAdjacencyMatrix("./data/networkMatrix.csv");
 
 let test_data = valuesTest(net_csv) + "\n" + algorithmTest(net_csv);
 
