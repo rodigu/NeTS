@@ -47,14 +47,26 @@ export class Network {
   }
 
   /**
+   * Get network's vertex weight.
+   *
+   * A network's vertex weight is the sum of all its vertices' weights
+   * @returns number
+   */
+  get vertex_weight(): number {
+    return this.vertex_list
+      .map((vertex) => vertex.weight)
+      .reduce((prev, curr) => prev + curr);
+  }
+
+  /**
    * Get network's weight.
    *
-   * A network's weight is the sum of all its vertices' weights
+   * A network's weight is the sum of all its edges' weights
    * @returns number
    */
   get weight(): number {
-    return this.vertex_list
-      .map((vertex) => vertex.weight)
+    return this.edge_list
+      .map((edge) => edge.weight)
       .reduce((prev, curr) => prev + curr);
   }
 
@@ -74,6 +86,24 @@ export class Network {
   get positive_vertices(): Vertex[] {
     const { vertex_list } = this;
     return vertex_list.filter((vertex) => vertex.weight > 0);
+  }
+
+  /**
+   * List of vertices with negative weight.
+   * @returns Edge[]
+   */
+  get negative_edges(): Edge[] {
+    const { edge_list } = this;
+    return edge_list.filter((edge) => edge.weight < 0);
+  }
+
+  /**
+   * List of vertices with positive weight.
+   * @returns Edge[]
+   */
+  get positive_edges(): Edge[] {
+    const { edge_list } = this;
+    return edge_list.filter((edge) => edge.weight > 0);
   }
 
   /**
