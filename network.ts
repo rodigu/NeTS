@@ -147,6 +147,8 @@ export class Network {
     if (!this.is_multigraph && this.hasEdge(args.from, args.to)) return;
     // throw { message: ERROR.NOT_MULTIGRAPH };
 
+    if (!this.is_directed) [args.from, args.to] = [args.from, args.to].sort();
+
     this.edges.set(args.id, new Edge(args));
   }
 
@@ -652,8 +654,10 @@ export class Network {
       const { from, to } = edge.vertices;
       k2.neighbors(from).forEach((id) => {
         if (edge.hasVertex(id)) return;
-        const triplet: Triplet = [id, ...[from, to].sort()];
-        if (k2.isSameTriplet(triplet, triplet.sort()))
+        const triplet: Triplet = [id, from, to];
+        const unsorted = [...triplet];
+
+        if (k2.isSameTriplet(unsorted, triplet.sort()))
           if (k2.hasEdge(id, to, true)) triplet_list.push(triplet);
       });
     });
