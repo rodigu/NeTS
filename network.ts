@@ -657,8 +657,13 @@ export class Network {
         const triplet: Triplet = [id, from, to];
         const unsorted = [...triplet];
 
-        if (k2.isSameTriplet(unsorted, triplet.sort()))
-          if (k2.hasEdge(id, to, true)) triplet_list.push(triplet);
+        if (
+          k2.isSameTriplet(unsorted, triplet.sort()) ||
+          (this.is_directed && !this.listHasTriplet(triplet_list, triplet))
+        )
+          if (k2.hasEdge(id, to, true) && !this.is_directed)
+            triplet_list.push(triplet);
+          else if (k2.hasEdge(id, to, false)) triplet_list.push(triplet);
       });
     });
 
