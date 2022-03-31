@@ -3,7 +3,6 @@ import { base_id, VertexArgs } from "./enums.ts";
 export class Vertex {
   readonly id: base_id;
   weight: number;
-  previous_vertex?: base_id;
 
   /**
    * Vertex constructor

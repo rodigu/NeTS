@@ -152,6 +152,21 @@ export class Network {
   }
 
   /**
+   * Ranked neighborhood: list sorted by the number of neighbors by vertex
+   * @returns { vertex: base_id; neighbors: number }[]
+   */
+  get ranked_neighborhood(): { vertex: base_id; neighbors: number }[] {
+    return this.vertex_list
+      .map((vertex) => {
+        return {
+          vertex: vertex.id,
+          neighbors: this.neighbors(vertex.id).length,
+        };
+      })
+      .sort((a, b) => (a.neighbors < b.neighbors ? 1 : -1));
+  }
+
+  /**
    * @param  {EdgeArgs} args
    */
   addEdge(args: EdgeArgs) {
@@ -596,48 +611,6 @@ export class Network {
     average_clustering = clustering_sum / this.vertices.size;
 
     return average_clustering;
-  }
-
-  /**
-   * Returns a new network with all weighted paths between id and other vertices in the network.
-   * @param  {base_id} id
-   * @returns Network
-   */
-  weightedPaths(id: base_id): Network {
-    const weighted_net = this.copy();
-    const { vertices } = weighted_net;
-    vertices.forEach((vertex) => {
-      vertex.weight = vertex.id === id ? 0 : -1;
-    });
-    const get_path = (initial_vertex_id: base_id) => {
-      const vertex_neighbors = weighted_net.neighbors(initial_vertex_id);
-      const initial_vertex =
-        weighted_net.vertices.get(initial_vertex_id) ??
-        new Vertex({ id: initial_vertex_id });
-      vertex_neighbors.forEach((vertex_id) => {
-        const has_edge = weighted_net.hasEdge(
-          initial_vertex_id,
-          vertex_id,
-          weighted_net.is_directed
-        );
-        const vertex =
-          weighted_net.vertices.get(vertex_id) ?? new Vertex({ id: vertex_id });
-        const edge =
-          weighted_net.edgeBetween(initial_vertex_id, vertex_id) ??
-          new Edge({ from: initial_vertex_id, to: vertex_id });
-        if (
-          has_edge &&
-          (vertex?.weight === -1 ||
-            initial_vertex.weight + edge.weight < vertex.weight)
-        ) {
-          vertex.weight = edge.weight + initial_vertex.weight;
-          vertex.previous_vertex = initial_vertex_id;
-          get_path(vertex_id);
-        }
-      });
-    };
-    get_path(id);
-    return weighted_net;
   }
 
   /**

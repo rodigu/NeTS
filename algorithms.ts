@@ -105,6 +105,9 @@ function parseCSV(csv_file: string[]): ParsedCSV {
   return parsed_csv;
 }
 
+/**
+ * Write to a CSV file.
+ */
 async function writeCSV(
   rows: Array<Array<string | number>>,
   file_name = "adjacencyMatrix.csv"
@@ -118,6 +121,11 @@ async function writeCSV(
   await Deno.writeTextFile(file_name, csv);
 }
 
+/**
+ * Exports given network into an adjacency matrix in the form of a CSV file.
+ * @param  {Network} network
+ * @param  {} file_name="adjacencyMatrix.csv"
+ */
 export async function writeAdjacencyMatrix(
   network: Network,
   file_name = "adjacencyMatrix.csv"
