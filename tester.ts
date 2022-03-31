@@ -94,3 +94,10 @@ Deno.writeTextFile(
   `./data/test_${getTestTime()}_${Math.floor(200 * Math.random())}.txt`,
   test_data
 );
+
+const randomNet = nex.randomNetworkGen({
+  number_vertices: 20,
+  number_edges: 40,
+});
+
+nex.writeAdjacencyMatrix(randomNet);

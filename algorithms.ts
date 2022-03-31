@@ -1,5 +1,5 @@
 import { Network } from "./network.ts";
-import { ParsedCSV } from "./enums.ts";
+import { ParsedCSV, base_id } from "./enums.ts";
 
 /**
  * Tries to generate a network with the given number of nodes and edges.
@@ -103,4 +103,40 @@ function parseCSV(csv_file: string[]): ParsedCSV {
   });
 
   return parsed_csv;
+}
+
+async function writeCSV(
+  rows: Array<Array<string | number>>,
+  file_name = "adjacencyMatrix.csv"
+) {
+  let csv = "";
+  rows.forEach((row) => {
+    row.forEach((element, i) => {
+      csv += `${element + (i === row.length - 1 ? "\n" : ",")}`;
+    });
+  });
+  await Deno.writeTextFile(file_name, csv);
+}
+
+export async function writeAdjacencyMatrix(
+  network: Network,
+  file_name = "adjacencyMatrix.csv"
+) {
+  const number_of_rows = network.vertices.size + 1;
+  const rows: Array<Array<base_id>> = [...Array(number_of_rows)].map(() =>
+    Array(number_of_rows).fill(0)
+  );
+
+  network.vertex_list.forEach((vertex, i) => {
+    rows[0][i + 1] = vertex.id;
+    rows[i + 1][0] = vertex.id;
+    network.vertex_list.forEach((vertex2, j) => {
+      if (network.hasEdge(vertex2.id, vertex.id)) {
+        rows[i + 1][j + 1] = 1;
+        rows[j + 1][i + 1] = 1;
+      }
+    });
+  });
+
+  await writeCSV(rows, file_name);
 }
