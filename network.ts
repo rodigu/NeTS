@@ -6,7 +6,8 @@ import {
   EdgeArgs,
   NetworkArgs,
   ERROR,
-  Triplet,
+  Cycle,
+  EdgeNeighborhood,
 } from "./enums.ts";
 
 export class Network {
@@ -644,10 +645,10 @@ export class Network {
 
   /**
    * Returns a list with all triplets in the network.
-   * @returns Triplet[]
+   * @returns Cycle[]
    */
-  triplets(): Triplet[] {
-    const triplet_list: Triplet[] = [];
+  triplets(): Cycle[] {
+    const triplet_list: Cycle[] = [];
 
     const k2 = this.core(2);
 
@@ -657,12 +658,12 @@ export class Network {
       const { from, to } = edge.vertices;
       k2.neighbors(from).forEach((id) => {
         if (edge.hasVertex(id)) return;
-        const triplet: Triplet = [id, from, to];
+        const triplet: Cycle = [id, from, to];
         const unsorted = [...triplet];
 
         if (
-          k2.isSameTriplet(unsorted, triplet.sort()) ||
-          (this.is_directed && !this.listHasTriplet(triplet_list, triplet))
+          k2.isSameCycle(unsorted, triplet.sort()) ||
+          (this.is_directed && !this.listHasCycle(triplet_list, triplet))
         )
           if (k2.hasEdge(id, to, true) && !this.is_directed)
             triplet_list.push(triplet);
@@ -671,6 +672,68 @@ export class Network {
     });
 
     return triplet_list;
+  }
+
+  quadruplets(): Cycle[] {
+    const c4: Cycle[] = [];
+
+    const k2 = this.core(2);
+    const { edges } = k2;
+
+    edges.forEach((edge1) => {
+      const neighbors1 = this.edgeNeighbors(edge1);
+      const vertex_check: base_id[] = [];
+
+      let small_neighborhood = neighbors1.from.neighbors;
+      vertex_check.push(neighbors1.from.id);
+      vertex_check.push(neighbors1.to.id);
+
+      if (!this.is_directed) {
+        if (neighbors1.from.neighbors.length > neighbors1.to.neighbors.length) {
+          vertex_check[0] = neighbors1.to.id;
+          vertex_check[1] = neighbors1.from.id;
+          small_neighborhood = neighbors1.to.neighbors;
+        }
+      }
+
+      small_neighborhood.forEach((vertex_id) => {
+        const edges_of = this.is_directed
+          ? this.edgesFrom(vertex_id)
+          : this.edgesWith(vertex_id);
+        vertex_check.push(vertex_id);
+        edges_of.forEach((edge2) => {
+          const { vertices } = edge2;
+          vertex_check.push(
+            vertices.from === vertex_id ? vertices.to : vertices.from
+          );
+          if (this.hasEdge(vertex_check[3], vertex_check[0]))
+            c4.push(vertex_check);
+        });
+      });
+    });
+
+    return c4;
+  }
+
+  edgesFrom(vertex_id: base_id): Edge[] {
+    return this.edge_list.filter((edge) => edge.vertices.from === vertex_id);
+  }
+
+  edgesWith(vertex_id: base_id): Edge[] {
+    return this.edge_list.filter(
+      (edge) =>
+        edge.vertices.from === vertex_id || edge.vertices.to === vertex_id
+    );
+  }
+
+  edgeNeighbors(edge: Edge): EdgeNeighborhood {
+    const { from, to } = edge.vertices;
+    const edge_neighbors: EdgeNeighborhood = {
+      from: { id: from, neighbors: this.neighbors(from) },
+      to: { id: to, neighbors: this.neighbors(to) },
+    };
+
+    return edge_neighbors;
   }
 
   /**
@@ -687,21 +750,21 @@ export class Network {
 
   /**
    * Checks if a list of triplets contains a certain triplet
-   * @param  {Triplet[]} triplet_arr
-   * @param  {Triplet} triplet
+   * @param  {Cycle[]} triplet_arr
+   * @param  {Cycle} triplet
    * @returns boolean
    */
-  private listHasTriplet(triplet_arr: Triplet[], triplet: Triplet): boolean {
-    return triplet_arr.some((trip) => this.isSameTriplet(triplet, trip));
+  private listHasCycle(cycle_arr: Cycle[], cycle: Cycle): boolean {
+    return cycle_arr.some((trip) => this.isSameCycle(cycle, trip));
   }
 
   /**
    * Compares two triplets (directed), returns whether they are the same.
-   * @param  {Triplet} arr1
-   * @param  {Triplet} arr2
+   * @param  {Cycle} arr1
+   * @param  {Cycle} arr2
    * @returns boolean
    */
-  private isSameTriplet(arr1: Triplet, arr2: Triplet): boolean {
+  private isSameCycle(arr1: Cycle, arr2: Cycle): boolean {
     if (arr1.length !== arr2.length) return false;
     return arr1.every((element, index) => element === arr2[index]);
   }
