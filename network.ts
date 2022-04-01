@@ -682,16 +682,16 @@ export class Network {
 
     edges.forEach((edge1) => {
       const neighbors1 = this.edgeNeighbors(edge1);
-      const vertex_check: base_id[] = [];
+      const vertex_check: Map<base_id, number> = new Map();
 
       let small_neighborhood = neighbors1.from.neighbors;
-      vertex_check.push(neighbors1.from.id);
-      vertex_check.push(neighbors1.to.id);
+      vertex_check.set(neighbors1.from.id, 0);
+      vertex_check.set(neighbors1.to.id, 1);
 
       if (!this.is_directed) {
         if (neighbors1.from.neighbors.length > neighbors1.to.neighbors.length) {
-          vertex_check[0] = neighbors1.to.id;
-          vertex_check[1] = neighbors1.from.id;
+          vertex_check.set(neighbors1.to.id, 0);
+          vertex_check.set(neighbors1.from.id, 1);
           small_neighborhood = neighbors1.to.neighbors;
         }
       }
@@ -700,15 +700,24 @@ export class Network {
         const edges_of = this.is_directed
           ? this.edgesFrom(vertex_id)
           : this.edgesWith(vertex_id);
-        vertex_check.push(vertex_id);
-        edges_of.forEach((edge2) => {
-          const { vertices } = edge2;
-          vertex_check.push(
-            vertices.from === vertex_id ? vertices.to : vertices.from
-          );
-          if (this.hasEdge(vertex_check[3], vertex_check[0]))
-            c4.push(vertex_check);
-        });
+        if (!vertex_check.has(vertex_id)) {
+          vertex_check.set(vertex_id, 2);
+          edges_of.forEach((edge2) => {
+            const { vertices } = edge2;
+            vertex_check.set(
+              vertices.from === vertex_id ? vertices.to : vertices.from,
+              3
+            );
+
+            const check_list = [...vertex_check.keys()];
+            if (
+              this.hasEdge(check_list[3], check_list[0]) &&
+              vertex_check.size === 4 &&
+              !this.listHasCycle(c4, [...vertex_check.keys()])
+            )
+              c4.push([...vertex_check.keys()]);
+          });
+        }
       });
     });
 

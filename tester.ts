@@ -81,23 +81,36 @@ function getTestTime(): string {
   );
 }
 
-const net_csv = await nex.loadAdjacencyMatrix("./data/networkMatrix.csv");
+// const net_csv = await nex.loadAdjacencyMatrix("./data/networkMatrix.csv");
 
-let test_data = valuesTest(net_csv) + "\n" + algorithmTest(net_csv);
+// let test_data = valuesTest(net_csv) + "\n" + algorithmTest(net_csv);
 
-const end_time = new Date().getTime();
-const elapsed_time = (end_time - start_time) / 1000;
+// const end_time = new Date().getTime();
+// const elapsed_time = (end_time - start_time) / 1000;
 
-test_data += "\nElapsed time: " + elapsed_time;
+// test_data += "\nElapsed time: " + elapsed_time;
 
-Deno.writeTextFile(
-  `./data/test_${getTestTime()}_${Math.floor(200 * Math.random())}.txt`,
-  test_data
-);
+// Deno.writeTextFile(
+//   `./data/test_${getTestTime()}_${Math.floor(200 * Math.random())}.txt`,
+//   test_data
+// );
 
-const randomNet = nex.randomNetworkGen({
-  number_vertices: 20,
-  number_edges: 40,
-});
+// const randomNet = nex.randomNetworkGen({
+//   number_vertices: 20,
+//   number_edges: 40,
+// });
 
-nex.writeAdjacencyMatrix(randomNet);
+// nex.writeAdjacencyMatrix(randomNet);
+
+const net = new nets.Network();
+net.addEdgeList([
+  ["a", "b"],
+  ["b", "c"],
+  ["c", "d"],
+  ["d", "a"],
+  ["e", "d"],
+  ["e", "c"],
+  ["b", "d"],
+]);
+
+console.log(net.quadruplets());
