@@ -1,6 +1,17 @@
 export type base_id = string | number;
 
-export type Triplet = base_id[];
+export type Cycle = base_id[];
+
+export interface EdgeNeighborhood {
+  from: {
+    id: base_id;
+    neighbors: base_id[];
+  };
+  to: {
+    id: base_id;
+    neighbors: base_id[];
+  };
+}
 
 export interface VertexArgs {
   id: base_id;
