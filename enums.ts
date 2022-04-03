@@ -43,4 +43,5 @@ export const ERROR = {
   NOT_MULTIGRAPH:
     "Trying to add multiple edges between two vertices. Graph is not a multigraph!",
   UNDEFINED_ID: "Tried to use undefined id as input",
+  SELF_LOOP: "No self-loops",
 };
