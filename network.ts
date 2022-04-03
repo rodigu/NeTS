@@ -135,6 +135,10 @@ export class Network {
     return [...this.edges.values()];
   }
 
+  get simple_edge_list(): [base_id, base_id][] {
+    return this.edge_list.map(({ vertices }) => [vertices.from, vertices.to]);
+  }
+
   /**
    * Number of edges in the [maximum clique possible](https://www.wikiwand.com/en/Clique_(graph_theory)) with the network's number of verices.
    * @returns number
