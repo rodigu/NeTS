@@ -131,10 +131,18 @@ export class Network {
     return [...this.vertices.values()];
   }
 
+  /**
+   * Get an array with the edges of the network
+   * @returns Edge[]
+   */
   get edge_list(): Edge[] {
     return [...this.edges.values()];
   }
 
+  /**
+   * Returns pairs of nodes that represent `from` and `to` (respectively) vertices in an edge
+   * @returns [base_id, base_id][]
+   */
   get simple_edge_list(): [base_id, base_id][] {
     return this.edge_list.map(({ vertices }) => [vertices.from, vertices.to]);
   }
@@ -689,6 +697,10 @@ export class Network {
     return triplet_list;
   }
 
+  /**
+   * Algorithm to find all quadruplets in a network.
+   * @returns Cycle[]
+   */
   quadruplets(): Cycle[] {
     const c4: Cycle[] = [];
 
@@ -747,6 +759,11 @@ export class Network {
     );
   }
 
+  /**
+   * Returns all edges with the given vertex, regardless of the position of the vertex (`from` or `to`).
+   * @param  {base_id} vertex_id
+   * @returns Edge
+   */
   edgesWith(vertex_id: base_id): Edge[] {
     return this.edge_list.filter(
       (edge) =>
@@ -754,6 +771,11 @@ export class Network {
     );
   }
 
+  /**
+   * Returns the given edge's neighborhood. That is, the neighborhood of both its vertices.
+   * @param  {Edge} edge
+   * @returns EdgeNeighborhood
+   */
   edgeNeighbors(edge: Edge): EdgeNeighborhood {
     const { from, to } = edge.vertices;
     const edge_neighbors: EdgeNeighborhood = {
