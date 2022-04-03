@@ -883,15 +883,9 @@ export class Cycle extends Network {
     return this.is_closed;
   }
 
-  addEdge(edge: EdgeArgs | undefined) {
-    if (
-      edge !== undefined &&
-      !this.is_closed &&
-      ((edge.from === this.tip_vertex && !this.hasVertex(edge.to)) ||
-        (!this.is_directed &&
-          edge.to === this.tip_vertex &&
-          !this.hasVertex(edge.from)))
-    ) {
+   */
+  addEdge(edge: EdgeArgs | undefined): boolean {
+    if (edge !== undefined && this.canAdd(edge)) {
       super.addEdge(edge);
       if (!this.is_directed && this.tip_vertex === edge.to)
         this.tip_vertex = edge.from;
@@ -932,5 +926,25 @@ export class Cycle extends Network {
         );
       });
     });
+  }
+
+  private canCloseWith(edge: EdgeArgs): boolean {
+    const edge_has_tip_and_loop_vertex =
+      (edge.from === this.tip_vertex && edge.to === this.loop_vertex) ||
+      (!this.is_directed &&
+        edge.to === this.tip_vertex &&
+        edge.from === this.loop_vertex);
+
+    return !this.is_closed && edge_has_tip_and_loop_vertex;
+  }
+
+  private canAdd(edge: EdgeArgs) {
+    const edge_has_tip =
+      (edge.from === this.tip_vertex && !this.hasVertex(edge.to)) ||
+      (!this.is_directed &&
+        edge.to === this.tip_vertex &&
+        !this.hasVertex(edge.from));
+
+    return !this.is_closed && edge_has_tip;
   }
 }
