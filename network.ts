@@ -716,15 +716,11 @@ export class Network {
             initial_edge,
             loop_vertex,
           });
+
           if (cycle.addEdge(k2.edgeBetween(cycle.tip, vertex)?.args))
             if (cycle.addEdge(p_edge.args))
-              if (
-                cycle.close(
-                  k2.edgeBetween(p_edge.pairVertex(cycle.tip), loop_vertex)
-                    ?.args
-                )
-              )
-                c4.push(cycle);
+              if (cycle.close(k2.edgeBetween(cycle.tip, loop_vertex)?.args))
+                if (!c4.some((c) => c.isSameAs(cycle))) c4.push(cycle);
         });
       });
     });
