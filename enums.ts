@@ -1,7 +1,5 @@
 export type base_id = string | number;
 
-export type Cycle = base_id[];
-
 export interface EdgeNeighborhood {
   from: {
     id: base_id;
