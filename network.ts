@@ -181,6 +181,8 @@ export class Network {
 
     if (this.edges.has(args.id)) throw { message: ERROR.EXISTING_EDGE };
 
+    if (args.from === args.to) throw { message: ERROR.SELF_LOOP, args };
+
     if (this.edges.size >= this.edge_limit) throw { message: ERROR.EDGE_LIMIT };
 
     if (!args.do_force) {
