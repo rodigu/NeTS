@@ -1,8 +1,8 @@
 import { base_id, EdgeArgs } from "./enums.ts";
 
 export class Edge {
-  private to: base_id;
   private from: base_id;
+  private to: base_id;
   weight: number;
 
   /**
