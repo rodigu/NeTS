@@ -895,4 +895,17 @@ export class Cycle extends Network {
 
     return false;
   }
+
+  isSameAs(cycle: Cycle) {
+    return this.edge_list.every(({ vertices }) => {
+      return cycle.edge_list.some(({ vertices: compare }) => {
+        return (
+          (compare.from === vertices.from && compare.to === vertices.to) ||
+          (!this.is_directed &&
+            compare.from === vertices.to &&
+            compare.to === vertices.from)
+        );
+      });
+    });
+  }
 }
