@@ -682,13 +682,51 @@ export class Network {
     return triplet_list;
   }
 
-  quadruplets(): base_id[][] {
-    const c4: base_id[][] = [];
+  quadruplets(): Cycle[] {
+    const c4: Cycle[] = [];
 
     const k2 = this.core(2);
     const edges1 = k2.edges;
 
-    edges1.forEach((edge1) => {});
+    edges1.forEach((edge1) => {
+      const initial_edge = edge1.args;
+      let loop_vertex = edge1.vertices.from;
+      let pair_vertex = edge1.pairVertex(loop_vertex)!;
+      let pair_vertex_neighbors = k2.neighbors(pair_vertex);
+
+      if (!k2.is_directed) {
+        const loop_vertex_neighbors = k2.neighbors(loop_vertex);
+        if (pair_vertex_neighbors.length > loop_vertex_neighbors.length) {
+          const temp = loop_vertex;
+          loop_vertex = pair_vertex;
+          pair_vertex = temp;
+          pair_vertex_neighbors = loop_vertex_neighbors;
+        }
+      }
+
+      pair_vertex_neighbors.forEach((vertex) => {
+        const parallel_edges = k2.is_directed
+          ? k2.edgesFrom(vertex)
+          : k2.edgesWith(vertex);
+
+        parallel_edges.forEach((p_edge) => {
+          const cycle = new Cycle({
+            is_directed: k2.is_directed,
+            initial_edge,
+            loop_vertex,
+          });
+          if (cycle.addEdge(k2.edgeBetween(cycle.tip, vertex)?.args))
+            if (cycle.addEdge(p_edge.args))
+              if (
+                cycle.close(
+                  k2.edgeBetween(p_edge.pairVertex(cycle.tip), loop_vertex)
+                    ?.args
+                )
+              )
+                c4.push(cycle);
+        });
+      });
+    });
 
     return c4;
   }
