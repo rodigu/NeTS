@@ -29,6 +29,21 @@ export class Edge {
     return { from: this.from, to: this.to, weight: this.weight };
   }
 
+  isSameAs(edge: Edge, is_directed = false): boolean {
+    const { vertices } = this;
+    return (
+      (edge.vertices.from === vertices.from &&
+        edge.vertices.to === vertices.to) ||
+      (!is_directed &&
+        edge.vertices.from === vertices.to &&
+        edge.vertices.to === vertices.from)
+    );
+  }
+
+  pairEdge(vertex_id: base_id): base_id {
+    return vertex_id === this.to ? this.from : this.to;
+  }
+
   hasVertex(vertex_id: base_id): boolean {
     if (this.from === vertex_id || this.to === vertex_id) return true;
     return false;

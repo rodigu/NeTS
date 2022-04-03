@@ -6,7 +6,6 @@ import {
   EdgeArgs,
   NetworkArgs,
   ERROR,
-  Cycle,
   EdgeNeighborhood,
 } from "./enums.ts";
 
@@ -348,6 +347,15 @@ export class Network {
   }
 
   /**
+   * Returns true if an edge with the given id exists
+   * @param  {base_id} id
+   * @returns boolean
+   */
+  hasVertices(ids: base_id[]): boolean {
+    return ids.every((id) => this.vertices.has(id));
+  }
+
+  /**
    * Get in-neighbors of a given vertex.
    *
    * Returns [] if network is undirected.
@@ -647,8 +655,8 @@ export class Network {
    * Returns a list with all triplets in the network.
    * @returns Cycle[]
    */
-  triplets(): Cycle[] {
-    const triplet_list: Cycle[] = [];
+  triplets(): base_id[][] {
+    const triplet_list: base_id[][] = [];
 
     const k2 = this.core(2);
 
@@ -658,7 +666,7 @@ export class Network {
       const { from, to } = edge.vertices;
       k2.neighbors(from).forEach((id) => {
         if (edge.hasVertex(id)) return;
-        const triplet: Cycle = [id, from, to];
+        const triplet: base_id[] = [id, from, to];
         const unsorted = [...triplet];
 
         if (
@@ -674,64 +682,36 @@ export class Network {
     return triplet_list;
   }
 
-  quadruplets(): Cycle[] {
-    const c4: Cycle[] = [];
+  quadruplets(): base_id[][] {
+    const c4: base_id[][] = [];
 
     const k2 = this.core(2);
-    const { edges } = k2;
+    const edges1 = k2.edges;
 
-    edges.forEach((edge1) => {
-      const neighbors1 = this.edgeNeighbors(edge1);
-      const vertex_check: Map<base_id, number> = new Map();
-
-      let small_neighborhood = neighbors1.from.neighbors;
-      vertex_check.set(neighbors1.from.id, 0);
-      vertex_check.set(neighbors1.to.id, 1);
-
-      if (!this.is_directed) {
-        if (neighbors1.from.neighbors.length > neighbors1.to.neighbors.length) {
-          vertex_check.set(neighbors1.to.id, 0);
-          vertex_check.set(neighbors1.from.id, 1);
-          small_neighborhood = neighbors1.to.neighbors;
-        }
-      }
-
-      small_neighborhood.forEach((vertex_id) => {
-        const edges_of = this.is_directed
-          ? this.edgesFrom(vertex_id)
-          : this.edgesWith(vertex_id);
-        if (!vertex_check.has(vertex_id)) {
-          vertex_check.set(vertex_id, 2);
-          edges_of.forEach((edge2) => {
-            const { vertices } = edge2;
-            vertex_check.set(
-              vertices.from === vertex_id ? vertices.to : vertices.from,
-              3
-            );
-
-            const check_list = [...vertex_check.keys()];
-            if (
-              this.hasEdge(check_list[3], check_list[0]) &&
-              vertex_check.size === 4 &&
-              !this.listHasCycle(c4, [...vertex_check.keys()])
-            )
-              c4.push([...vertex_check.keys()]);
-          });
-        }
-      });
-    });
+    edges1.forEach((edge1) => {});
 
     return c4;
   }
 
-  edgesFrom(vertex_id: base_id): Edge[] {
-    return this.edge_list.filter((edge) => edge.vertices.from === vertex_id);
-  }
-
-  edgesWith(vertex_id: base_id): Edge[] {
+  /**
+   * Edges that start at vertex_id. Excluding edges with a `to` vertex in the `except` array
+   * @param  {base_id} vertex_id
+   * @param  {base_id[]=[]} except
+   * @returns Edge
+   */
+  edgesFrom(vertex_id: base_id, except: base_id[] = []): Edge[] {
     return this.edge_list.filter(
       (edge) =>
-        edge.vertices.from === vertex_id || edge.vertices.to === vertex_id
+        edge.vertices.from === vertex_id && !except.includes(edge.vertices.to)
+    );
+  }
+
+  edgesWith(vertex_id: base_id, except: base_id[]): Edge[] {
+    return this.edge_list.filter(
+      (edge) =>
+        (edge.vertices.from === vertex_id || edge.vertices.to === vertex_id) &&
+        (!except.includes(edge.vertices.to) ||
+          !except.includes(edge.vertices.from))
     );
   }
 
@@ -763,7 +743,7 @@ export class Network {
    * @param  {Cycle} triplet
    * @returns boolean
    */
-  private listHasCycle(cycle_arr: Cycle[], cycle: Cycle): boolean {
+  private listHasCycle(cycle_arr: base_id[][], cycle: base_id[]): boolean {
     return cycle_arr.some((trip) => this.isSameCycle(cycle, trip));
   }
 
@@ -773,9 +753,9 @@ export class Network {
    * @param  {Cycle} arr2
    * @returns boolean
    */
-  private isSameCycle(arr1: Cycle, arr2: Cycle): boolean {
+  private isSameCycle(arr1: base_id[], arr2: base_id[]): boolean {
     if (arr1.length !== arr2.length) return false;
-    return arr1.every((element, index) => element === arr2[index]);
+    return arr1.every((element) => arr2.includes(element));
   }
 
   /**
