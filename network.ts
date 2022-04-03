@@ -876,13 +876,27 @@ export class Cycle extends Network {
     this.is_closed = false;
   }
 
-  get tip() {
+  /**
+   * Getter for the tip of the cycle.
+   * @returns base_id
+   */
+  get tip(): base_id {
     return this.tip_vertex;
   }
-  get is_complete() {
+
+  /**
+   * Returns true if the cycle is closed, otherwise returns false.
+   * @returns boolean
+   */
+  get is_complete(): boolean {
     return this.is_closed;
   }
 
+  /**
+   * Adds an edge to the cycle if possible.
+   * Returns true if the addition is successful.
+   * @param  {EdgeArgs|undefined} edge
+   * @returns boolean
    */
   addEdge(edge: EdgeArgs | undefined): boolean {
     if (edge !== undefined && this.canAdd(edge)) {
@@ -897,15 +911,14 @@ export class Cycle extends Network {
     return false;
   }
 
-  close(edge: EdgeArgs | undefined) {
-    if (
-      edge !== undefined &&
-      !this.is_closed &&
-      ((edge.from === this.tip_vertex && edge.to === this.loop_vertex) ||
-        (!this.is_directed &&
-          edge.to === this.tip_vertex &&
-          edge.from === this.loop_vertex))
-    ) {
+  /**
+   * Tries to close the cycle.
+   * Returns true if the operation was sucessful.
+   * @param  {EdgeArgs|undefined} edge
+   * @returns boolean
+   */
+  close(edge: EdgeArgs | undefined): boolean {
+    if (edge !== undefined && this.canCloseWith(edge)) {
       super.addEdge(edge);
       this.is_closed = true;
       this.tip_vertex = this.loop_vertex;
@@ -915,7 +928,14 @@ export class Cycle extends Network {
     return false;
   }
 
-  isSameAs(cycle: Cycle) {
+  /**
+   * Compares the cycle with a given cycle.
+   * Returns whether they are the same or not.
+   * @param  {Cycle} cycle
+   * @returns boolean
+   */
+  isSameAs(cycle: Cycle): boolean {
+    if (this.is_directed !== cycle.is_directed) return false;
     return this.edge_list.every(({ vertices }) => {
       return cycle.edge_list.some(({ vertices: compare }) => {
         return (
