@@ -81,7 +81,7 @@ function getTestTime(): string {
   );
 }
 
-// const net_csv = await nex.loadAdjacencyMatrix("./data/networkMatrix.csv");
+const net_csv = await nex.loadAdjacencyMatrix("./data/networkMatrix.csv");
 
 // let test_data = valuesTest(net_csv) + "\n" + algorithmTest(net_csv);
 
@@ -95,22 +95,20 @@ function getTestTime(): string {
 //   test_data
 // );
 
-// const randomNet = nex.randomNetworkGen({
-//   number_vertices: 20,
-//   number_edges: 40,
-// });
+const randomNet = nex.randomNetworkGen({
+  number_vertices: 20,
+  number_edges: 40,
+});
 
 // nex.writeAdjacencyMatrix(randomNet);
 
-const net = new nets.Network();
-net.addEdgeList([
-  ["a", "b"],
-  ["b", "c"],
-  ["c", "d"],
-  ["d", "a"],
-  ["e", "d"],
-  ["e", "c"],
-  ["b", "d"],
-]);
+const quad_time = Date.now();
 
-console.log(net.quadruplets());
+const quad = randomNet.quadruplets();
+
+console.log(
+  quad.map((c) => [...c.edges.values()]),
+  quad.length,
+  Date.now() - quad_time,
+  randomNet.edges
+);
