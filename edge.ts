@@ -40,8 +40,10 @@ export class Edge {
     );
   }
 
-  pairEdge(vertex_id: base_id): base_id {
-    return vertex_id === this.to ? this.from : this.to;
+  pairVertex(vertex_id: base_id): base_id | undefined {
+    if (vertex_id === this.to) return this.from;
+    else if (vertex_id === this.from) return this.to;
+    return undefined;
   }
 
   hasVertex(vertex_id: base_id): boolean {
