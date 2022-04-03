@@ -282,10 +282,11 @@ export class Network {
    * @returns base_id[]
    */
   edgeBetween(
-    from: base_id,
-    to: base_id,
+    from: base_id | undefined,
+    to: base_id | undefined,
     is_directed = this.is_directed
   ): Edge | undefined {
+    if (from === undefined || to === undefined) return undefined;
     return this.edge_list.find(({ vertices }) =>
       this.checkEdgeIsSame(vertices, { from, to }, is_directed)
     );
