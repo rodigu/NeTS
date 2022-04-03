@@ -792,3 +792,70 @@ export class Network {
     return false;
   }
 }
+
+export class Cycle extends Network {
+  readonly loop_vertex: base_id;
+  private tip_vertex: base_id;
+  private is_closed: boolean;
+
+  constructor(args: {
+    is_directed: boolean;
+    initial_edge: EdgeArgs;
+    loop_vertex?: base_id;
+  }) {
+    super(args);
+    const { initial_edge, loop_vertex, is_directed } = args;
+    super.addEdge(initial_edge);
+    this.loop_vertex = initial_edge.from;
+    this.tip_vertex = initial_edge.to;
+    if (!is_directed && loop_vertex !== undefined) {
+      this.loop_vertex = loop_vertex;
+      this.tip_vertex = this.edge_list[0].pairVertex(this.loop_vertex)!;
+    }
+    this.is_closed = false;
+  }
+
+  get tip() {
+    return this.tip_vertex;
+  }
+  get is_complete() {
+    return this.is_closed;
+  }
+
+  addEdge(edge: EdgeArgs | undefined) {
+    if (
+      edge !== undefined &&
+      !this.is_closed &&
+      ((edge.from === this.tip_vertex && !this.hasVertex(edge.to)) ||
+        (!this.is_directed &&
+          edge.to === this.tip_vertex &&
+          !this.hasVertex(edge.from)))
+    ) {
+      super.addEdge(edge);
+      this.tip_vertex = edge.to;
+      if (!this.is_directed && this.tip_vertex === edge.to)
+        this.tip_vertex = edge.from;
+      return true;
+    }
+
+    return false;
+  }
+
+  close(edge: EdgeArgs | undefined) {
+    if (
+      edge !== undefined &&
+      !this.is_closed &&
+      ((edge.from === this.tip_vertex && edge.to === this.loop_vertex) ||
+        (!this.is_directed &&
+          edge.to === this.tip_vertex &&
+          edge.from === this.loop_vertex))
+    ) {
+      super.addEdge(edge);
+      this.is_closed = true;
+      this.tip_vertex = this.loop_vertex;
+      return true;
+    }
+
+    return false;
+  }
+}
