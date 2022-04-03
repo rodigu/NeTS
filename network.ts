@@ -6,7 +6,6 @@ import {
   EdgeArgs,
   NetworkArgs,
   ERROR,
-  Cycle,
   EdgeNeighborhood,
 } from "./enums.ts";
 
@@ -132,8 +131,20 @@ export class Network {
     return [...this.vertices.values()];
   }
 
+  /**
+   * Get an array with the edges of the network
+   * @returns Edge[]
+   */
   get edge_list(): Edge[] {
     return [...this.edges.values()];
+  }
+
+  /**
+   * Returns pairs of nodes that represent `from` and `to` (respectively) vertices in an edge
+   * @returns [base_id, base_id][]
+   */
+  get simple_edge_list(): [base_id, base_id][] {
+    return this.edge_list.map(({ vertices }) => [vertices.from, vertices.to]);
   }
 
   /**
@@ -177,6 +188,8 @@ export class Network {
     args.id ??= this.newEID();
 
     if (this.edges.has(args.id)) throw { message: ERROR.EXISTING_EDGE };
+
+    if (args.from === args.to) throw { message: ERROR.SELF_LOOP, args };
 
     if (this.edges.size >= this.edge_limit) throw { message: ERROR.EDGE_LIMIT };
 
@@ -283,10 +296,11 @@ export class Network {
    * @returns base_id[]
    */
   edgeBetween(
-    from: base_id,
-    to: base_id,
+    from: base_id | undefined,
+    to: base_id | undefined,
     is_directed = this.is_directed
   ): Edge | undefined {
+    if (from === undefined || to === undefined) return undefined;
     return this.edge_list.find(({ vertices }) =>
       this.checkEdgeIsSame(vertices, { from, to }, is_directed)
     );
@@ -345,6 +359,15 @@ export class Network {
    */
   hasVertex(id: base_id): boolean {
     return this.vertices.has(id);
+  }
+
+  /**
+   * Returns true if an edge with the given id exists
+   * @param  {base_id} id
+   * @returns boolean
+   */
+  hasVertices(ids: base_id[]): boolean {
+    return ids.every((id) => this.vertices.has(id));
   }
 
   /**
@@ -647,8 +670,8 @@ export class Network {
    * Returns a list with all triplets in the network.
    * @returns Cycle[]
    */
-  triplets(): Cycle[] {
-    const triplet_list: Cycle[] = [];
+  triplets(): base_id[][] {
+    const triplet_list: base_id[][] = [];
 
     const k2 = this.core(2);
 
@@ -658,7 +681,7 @@ export class Network {
       const { from, to } = edge.vertices;
       k2.neighbors(from).forEach((id) => {
         if (edge.hasVertex(id)) return;
-        const triplet: Cycle = [id, from, to];
+        const triplet: base_id[] = [id, from, to];
         const unsorted = [...triplet];
 
         if (
@@ -674,60 +697,73 @@ export class Network {
     return triplet_list;
   }
 
+  /**
+   * Algorithm to find all quadruplets in a network.
+   * @returns Cycle[]
+   */
   quadruplets(): Cycle[] {
     const c4: Cycle[] = [];
 
     const k2 = this.core(2);
-    const { edges } = k2;
+    const edges1 = k2.edges;
 
-    edges.forEach((edge1) => {
-      const neighbors1 = this.edgeNeighbors(edge1);
-      const vertex_check: Map<base_id, number> = new Map();
+    edges1.forEach((edge1) => {
+      const initial_edge = edge1.args;
+      let loop_vertex = edge1.vertices.from;
+      let pair_vertex = edge1.pairVertex(loop_vertex)!;
+      let pair_vertex_neighbors = k2.neighbors(pair_vertex);
 
-      let small_neighborhood = neighbors1.from.neighbors;
-      vertex_check.set(neighbors1.from.id, 0);
-      vertex_check.set(neighbors1.to.id, 1);
-
-      if (!this.is_directed) {
-        if (neighbors1.from.neighbors.length > neighbors1.to.neighbors.length) {
-          vertex_check.set(neighbors1.to.id, 0);
-          vertex_check.set(neighbors1.from.id, 1);
-          small_neighborhood = neighbors1.to.neighbors;
+      if (!k2.is_directed) {
+        const loop_vertex_neighbors = k2.neighbors(loop_vertex);
+        if (pair_vertex_neighbors.length > loop_vertex_neighbors.length) {
+          const temp = loop_vertex;
+          loop_vertex = pair_vertex;
+          pair_vertex = temp;
+          pair_vertex_neighbors = loop_vertex_neighbors;
         }
       }
 
-      small_neighborhood.forEach((vertex_id) => {
-        const edges_of = this.is_directed
-          ? this.edgesFrom(vertex_id)
-          : this.edgesWith(vertex_id);
-        if (!vertex_check.has(vertex_id)) {
-          vertex_check.set(vertex_id, 2);
-          edges_of.forEach((edge2) => {
-            const { vertices } = edge2;
-            vertex_check.set(
-              vertices.from === vertex_id ? vertices.to : vertices.from,
-              3
-            );
+      pair_vertex_neighbors.forEach((vertex) => {
+        const parallel_edges = k2.is_directed
+          ? k2.edgesFrom(vertex)
+          : k2.edgesWith(vertex);
 
-            const check_list = [...vertex_check.keys()];
-            if (
-              this.hasEdge(check_list[3], check_list[0]) &&
-              vertex_check.size === 4 &&
-              !this.listHasCycle(c4, [...vertex_check.keys()])
-            )
-              c4.push([...vertex_check.keys()]);
+        parallel_edges.forEach((p_edge) => {
+          const cycle = new Cycle({
+            is_directed: k2.is_directed,
+            initial_edge,
+            loop_vertex,
           });
-        }
+
+          if (cycle.addEdge(k2.edgeBetween(cycle.tip, vertex)?.args))
+            if (cycle.addEdge(p_edge.args))
+              if (cycle.close(k2.edgeBetween(cycle.tip, loop_vertex)?.args))
+                if (!c4.some((c) => c.isSameAs(cycle))) c4.push(cycle);
+        });
       });
     });
 
     return c4;
   }
 
-  edgesFrom(vertex_id: base_id): Edge[] {
-    return this.edge_list.filter((edge) => edge.vertices.from === vertex_id);
+  /**
+   * Edges that start at vertex_id. Excluding edges with a `to` vertex in the `except` array
+   * @param  {base_id} vertex_id
+   * @param  {base_id[]=[]} except
+   * @returns Edge
+   */
+  edgesFrom(vertex_id: base_id, except: base_id[] = []): Edge[] {
+    return this.edge_list.filter(
+      (edge) =>
+        edge.vertices.from === vertex_id && !except.includes(edge.vertices.to)
+    );
   }
 
+  /**
+   * Returns all edges with the given vertex, regardless of the position of the vertex (`from` or `to`).
+   * @param  {base_id} vertex_id
+   * @returns Edge
+   */
   edgesWith(vertex_id: base_id): Edge[] {
     return this.edge_list.filter(
       (edge) =>
@@ -735,6 +771,11 @@ export class Network {
     );
   }
 
+  /**
+   * Returns the given edge's neighborhood. That is, the neighborhood of both its vertices.
+   * @param  {Edge} edge
+   * @returns EdgeNeighborhood
+   */
   edgeNeighbors(edge: Edge): EdgeNeighborhood {
     const { from, to } = edge.vertices;
     const edge_neighbors: EdgeNeighborhood = {
@@ -763,7 +804,7 @@ export class Network {
    * @param  {Cycle} triplet
    * @returns boolean
    */
-  private listHasCycle(cycle_arr: Cycle[], cycle: Cycle): boolean {
+  private listHasCycle(cycle_arr: base_id[][], cycle: base_id[]): boolean {
     return cycle_arr.some((trip) => this.isSameCycle(cycle, trip));
   }
 
@@ -773,9 +814,9 @@ export class Network {
    * @param  {Cycle} arr2
    * @returns boolean
    */
-  private isSameCycle(arr1: Cycle, arr2: Cycle): boolean {
+  private isSameCycle(arr1: base_id[], arr2: base_id[]): boolean {
     if (arr1.length !== arr2.length) return false;
-    return arr1.every((element, index) => element === arr2[index]);
+    return arr1.every((element) => arr2.includes(element));
   }
 
   /**
@@ -810,5 +851,120 @@ export class Network {
     )
       return true;
     return false;
+  }
+}
+
+export class Cycle extends Network {
+  readonly loop_vertex: base_id;
+  private tip_vertex: base_id;
+  private is_closed: boolean;
+
+  constructor(args: {
+    is_directed: boolean;
+    initial_edge: EdgeArgs;
+    loop_vertex?: base_id;
+  }) {
+    super(args);
+    const { initial_edge, loop_vertex, is_directed } = args;
+    super.addEdge(initial_edge);
+    this.loop_vertex = initial_edge.from;
+    this.tip_vertex = initial_edge.to;
+    if (!is_directed && loop_vertex !== undefined) {
+      this.loop_vertex = loop_vertex;
+      this.tip_vertex = this.edge_list[0].pairVertex(this.loop_vertex)!;
+    }
+    this.is_closed = false;
+  }
+
+  /**
+   * Getter for the tip of the cycle.
+   * @returns base_id
+   */
+  get tip(): base_id {
+    return this.tip_vertex;
+  }
+
+  /**
+   * Returns true if the cycle is closed, otherwise returns false.
+   * @returns boolean
+   */
+  get is_complete(): boolean {
+    return this.is_closed;
+  }
+
+  /**
+   * Adds an edge to the cycle if possible.
+   * Returns true if the addition is successful.
+   * @param  {EdgeArgs|undefined} edge
+   * @returns boolean
+   */
+  addEdge(edge: EdgeArgs | undefined): boolean {
+    if (edge !== undefined && this.canAdd(edge)) {
+      super.addEdge(edge);
+      if (!this.is_directed && this.tip_vertex === edge.to)
+        this.tip_vertex = edge.from;
+      else this.tip_vertex = edge.to;
+
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Tries to close the cycle.
+   * Returns true if the operation was sucessful.
+   * @param  {EdgeArgs|undefined} edge
+   * @returns boolean
+   */
+  close(edge: EdgeArgs | undefined): boolean {
+    if (edge !== undefined && this.canCloseWith(edge)) {
+      super.addEdge(edge);
+      this.is_closed = true;
+      this.tip_vertex = this.loop_vertex;
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Compares the cycle with a given cycle.
+   * Returns whether they are the same or not.
+   * @param  {Cycle} cycle
+   * @returns boolean
+   */
+  isSameAs(cycle: Cycle): boolean {
+    if (this.is_directed !== cycle.is_directed) return false;
+    return this.edge_list.every(({ vertices }) => {
+      return cycle.edge_list.some(({ vertices: compare }) => {
+        return (
+          (compare.from === vertices.from && compare.to === vertices.to) ||
+          (!this.is_directed &&
+            compare.from === vertices.to &&
+            compare.to === vertices.from)
+        );
+      });
+    });
+  }
+
+  private canCloseWith(edge: EdgeArgs): boolean {
+    const edge_has_tip_and_loop_vertex =
+      (edge.from === this.tip_vertex && edge.to === this.loop_vertex) ||
+      (!this.is_directed &&
+        edge.to === this.tip_vertex &&
+        edge.from === this.loop_vertex);
+
+    return !this.is_closed && edge_has_tip_and_loop_vertex;
+  }
+
+  private canAdd(edge: EdgeArgs) {
+    const edge_has_tip =
+      (edge.from === this.tip_vertex && !this.hasVertex(edge.to)) ||
+      (!this.is_directed &&
+        edge.to === this.tip_vertex &&
+        !this.hasVertex(edge.from));
+
+    return !this.is_closed && edge_has_tip;
   }
 }
