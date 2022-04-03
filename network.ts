@@ -706,12 +706,10 @@ export class Network {
     );
   }
 
-  edgesWith(vertex_id: base_id, except: base_id[]): Edge[] {
+  edgesWith(vertex_id: base_id): Edge[] {
     return this.edge_list.filter(
       (edge) =>
-        (edge.vertices.from === vertex_id || edge.vertices.to === vertex_id) &&
-        (!except.includes(edge.vertices.to) ||
-          !except.includes(edge.vertices.from))
+        edge.vertices.from === vertex_id || edge.vertices.to === vertex_id
     );
   }
 
