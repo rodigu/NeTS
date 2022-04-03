@@ -96,8 +96,8 @@ const net_csv = await nex.loadAdjacencyMatrix("./data/networkMatrix.csv");
 // );
 
 const randomNet = nex.randomNetworkGen({
-  number_vertices: 20,
-  number_edges: 40,
+  number_vertices: 6,
+  number_edges: 10,
 });
 
 // nex.writeAdjacencyMatrix(randomNet);
@@ -106,9 +106,10 @@ const quad_time = Date.now();
 
 const quad = randomNet.quadruplets();
 
+nex.writeAdjacencyMatrix(randomNet, "test_random_quad.csv");
+
 console.log(
   quad.map((c) => [...c.edges.values()]),
   quad.length,
-  Date.now() - quad_time,
   randomNet.edges
 );
