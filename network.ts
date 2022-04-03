@@ -869,9 +869,10 @@ export class Cycle extends Network {
           !this.hasVertex(edge.from)))
     ) {
       super.addEdge(edge);
-      this.tip_vertex = edge.to;
       if (!this.is_directed && this.tip_vertex === edge.to)
         this.tip_vertex = edge.from;
+      else this.tip_vertex = edge.to;
+
       return true;
     }
 
