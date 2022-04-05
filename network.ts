@@ -855,7 +855,7 @@ export class Network {
 }
 
 export class Cycle extends Network {
-  readonly loop_vertex: base_id;
+  private loop_vertex: base_id;
   private tip_vertex: base_id;
   private is_closed: boolean;
 
@@ -882,6 +882,10 @@ export class Cycle extends Network {
    */
   get tip(): base_id {
     return this.tip_vertex;
+  }
+
+  get loop(): base_id {
+    return this.loop_vertex;
   }
 
   /**
