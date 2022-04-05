@@ -9,7 +9,7 @@ import { ParsedCSV, base_id, NetworkArgs } from "./enums.ts";
  * @param  {boolean} [args.is_directed]
  * @returns Network
  */
-export function randomNetworkGen(args: {
+export function genRandomNetwork(args: {
   number_vertices: number;
   number_edges: number;
   is_directed?: boolean;
@@ -22,22 +22,23 @@ export function randomNetworkGen(args: {
   for (let vertex = 0; vertex < number_vertices; vertex++)
     net.addVertex({ id: vertex });
 
-  args.edge_tries ??= 20;
-  while (net.edges.size < number_edges && args.edge_tries > 0) {
+  let edge_tries = args.edge_tries ?? 30;
+  while (net.edges.size < number_edges && edge_tries > 0) {
     const from = Math.floor(Math.random() * number_vertices);
     const to = Math.floor(Math.random() * number_vertices);
-    try {
-      net.addEdge({ from, to, do_force: false });
-    } catch (e) {
-      args.edge_tries--;
-      console.log(e.message);
-    }
+    if (from !== to && net.addEdge({ from, to, do_force: false }))
+      edge_tries = args.edge_tries ?? 30;
+
+    edge_tries--;
   }
 
   return net;
 }
 
-export function genCompleteNetwork(size: number, args?: NetworkArgs): Network {
+export function genCompleteNetwork(
+  size: number,
+  args: NetworkArgs = {}
+): Network {
   const complete_net = new Network(
     Object.assign(args, {
       vertex_limit: size,
