@@ -900,6 +900,10 @@ export class Cycle extends Network {
     return this.is_closed;
   }
 
+  get length(): number {
+    return this.vertices.size;
+  }
+
   /**
    * Adds an edge to the cycle if possible.
    * Returns true if the addition is successful.
