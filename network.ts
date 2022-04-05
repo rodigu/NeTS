@@ -869,9 +869,13 @@ export class Cycle extends Network {
     super.addEdge(initial_edge);
     this.loop_vertex = initial_edge.from;
     this.tip_vertex = initial_edge.to;
-    if (!is_directed && loop_vertex !== undefined) {
+    if (
+      !is_directed &&
+      loop_vertex !== undefined &&
+      this.hasVertex(loop_vertex)
+    ) {
       this.loop_vertex = loop_vertex;
-      this.tip_vertex = this.edge_list[0].pairVertex(this.loop_vertex)!;
+      this.tip_vertex = this.edge_list[0].pairVertex(loop_vertex)!;
     }
     this.is_closed = false;
   }
