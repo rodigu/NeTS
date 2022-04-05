@@ -765,6 +765,36 @@ export class Network {
 
     if (cycle.length === 4 && cycle.is_complete) return cycle;
   }
+
+  quadrupletsEdgePairing(): Cycle[] {
+    const c4: Cycle[] = [];
+    const k2 = this.core(2);
+
+    const { is_directed } = k2;
+    k2.edges.forEach((edge) => {
+      k2.edges.forEach((parallel) => {
+        const square = this.genSquare(edge, parallel, k2);
+        if (square !== undefined && !c4.some((c) => c.isSameAs(square)))
+          c4.push(square);
+        if (!is_directed) {
+          const square_undirected = this.genSquare(
+            edge,
+            parallel,
+            k2,
+            edge.args.to
+          );
+          if (
+            square_undirected !== undefined &&
+            !c4.some((c) => c.isSameAs(square_undirected))
+          )
+            c4.push(square_undirected);
+        }
+      });
+    });
+
+    return c4;
+  }
+
   /**
    * Edges that start at vertex_id. Excluding edges with a `to` vertex in the `except` array
    * @param  {base_id} vertex_id
