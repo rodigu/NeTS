@@ -1,6 +1,7 @@
 - [NeTS](#nets)
 - [Basic Functionality](#basic-functionality)
 - [Extra functionality](#extra-functionality)
+- [Quadruplets](#quadruplets)
 
 ## NeTS
 
@@ -59,3 +60,9 @@ const net = await loadAdtacencyMatrix("file_name.csv");
 
 For testing, you can use the `randomNetworkGen` function.
 It randomly generates a network with the given arguments.
+
+## Quadruplets
+
+The quadruplets algorithm has the same exponetial time complexity as
+the edge pair algorithm.
+However, the less dense the network, the faster the quadruplets algorithm can get.

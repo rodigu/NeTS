@@ -181,7 +181,7 @@ export class Network {
   /**
    * @param  {EdgeArgs} args
    */
-  addEdge(args: EdgeArgs) {
+  addEdge(args: EdgeArgs): boolean {
     args.do_force ??= true;
     args.weight ??= 1;
 
@@ -203,12 +203,13 @@ export class Network {
       if (!this.vertices.has(args.to)) this.addVertex({ id: args.to });
     }
 
-    if (!this.is_multigraph && this.hasEdge(args.from, args.to)) return;
+    if (!this.is_multigraph && this.hasEdge(args.from, args.to)) return false;
     // throw { message: ERROR.NOT_MULTIGRAPH };
 
     if (!this.is_directed) [args.from, args.to] = [args.from, args.to].sort();
 
     this.edges.set(args.id, new Edge(args));
+    return true;
   }
 
   /**
