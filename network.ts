@@ -971,12 +971,12 @@ export class Cycle extends Network {
   }
 
   private canAdd(edge: EdgeArgs) {
-    const edge_has_tip =
+    const creates_loop =
       (edge.from === this.tip_vertex && !this.hasVertex(edge.to)) ||
       (!this.is_directed &&
         edge.to === this.tip_vertex &&
         !this.hasVertex(edge.from));
 
-    return !this.is_closed && edge_has_tip;
+    return !this.is_closed && creates_loop;
   }
 }
