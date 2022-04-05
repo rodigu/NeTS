@@ -746,6 +746,25 @@ export class Network {
     return c4;
   }
 
+  private genSquare(
+    edge: Edge,
+    parallel: Edge,
+    k2: Network,
+    loop_vertex?: base_id
+  ): Cycle | undefined {
+    const { is_directed } = k2;
+    const initial_edge = edge.args;
+    const cycle = new Cycle({ is_directed, initial_edge, loop_vertex });
+    if (
+      !cycle.addEdge(k2.edgeBetween(cycle.tip, parallel.vertices.from)?.args) &&
+      !is_directed
+    )
+      cycle.addEdge(k2.edgeBetween(cycle.tip, parallel.vertices.to)?.args);
+    cycle.addEdge(parallel.args);
+    cycle.close(k2.edgeBetween(cycle.tip, cycle.loop)?.args);
+
+    if (cycle.length === 4 && cycle.is_complete) return cycle;
+  }
   /**
    * Edges that start at vertex_id. Excluding edges with a `to` vertex in the `except` array
    * @param  {base_id} vertex_id
