@@ -1,5 +1,5 @@
 import { Network } from "./network.ts";
-import { ParsedCSV, base_id } from "./enums.ts";
+import { ParsedCSV, base_id, NetworkArgs } from "./enums.ts";
 
 /**
  * Tries to generate a network with the given number of nodes and edges.
@@ -35,6 +35,26 @@ export function randomNetworkGen(args: {
   }
 
   return net;
+}
+
+export function genCompleteNetwork(size: number, args?: NetworkArgs): Network {
+  const complete_net = new Network(
+    Object.assign(args, {
+      vertex_limit: size,
+      edge_limit: Math.floor((size * (size - 1)) / 2),
+    })
+  );
+
+  for (let vertex = 0; vertex < size; vertex++) {
+    complete_net.addVertex({ id: vertex });
+    complete_net.vertices.forEach((v) => {
+      if (v.id !== vertex) {
+        complete_net.addEdge({ from: v.id, to: vertex });
+      }
+    });
+  }
+
+  return complete_net;
 }
 
 /**
