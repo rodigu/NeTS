@@ -746,6 +746,55 @@ export class Network {
     return c4;
   }
 
+  private genSquare(
+    edge: Edge,
+    parallel: Edge,
+    k2: Network,
+    loop_vertex?: base_id
+  ): Cycle | undefined {
+    const { is_directed } = k2;
+    const initial_edge = edge.args;
+    const cycle = new Cycle({ is_directed, initial_edge, loop_vertex });
+    if (
+      !cycle.addEdge(k2.edgeBetween(cycle.tip, parallel.vertices.from)?.args) &&
+      !is_directed
+    )
+      cycle.addEdge(k2.edgeBetween(cycle.tip, parallel.vertices.to)?.args);
+    cycle.addEdge(parallel.args);
+    cycle.close(k2.edgeBetween(cycle.tip, cycle.loop)?.args);
+
+    if (cycle.length === 4 && cycle.is_complete) return cycle;
+  }
+
+  quadrupletsEdgePairing(): Cycle[] {
+    const c4: Cycle[] = [];
+    const k2 = this.core(2);
+
+    const { is_directed } = k2;
+    k2.edges.forEach((edge) => {
+      k2.edges.forEach((parallel) => {
+        const square = this.genSquare(edge, parallel, k2);
+        if (square !== undefined && !c4.some((c) => c.isSameAs(square)))
+          c4.push(square);
+        if (!is_directed) {
+          const square_undirected = this.genSquare(
+            edge,
+            parallel,
+            k2,
+            edge.args.to
+          );
+          if (
+            square_undirected !== undefined &&
+            !c4.some((c) => c.isSameAs(square_undirected))
+          )
+            c4.push(square_undirected);
+        }
+      });
+    });
+
+    return c4;
+  }
+
   /**
    * Edges that start at vertex_id. Excluding edges with a `to` vertex in the `except` array
    * @param  {base_id} vertex_id
@@ -855,7 +904,7 @@ export class Network {
 }
 
 export class Cycle extends Network {
-  readonly loop_vertex: base_id;
+  private loop_vertex: base_id;
   private tip_vertex: base_id;
   private is_closed: boolean;
 
@@ -869,9 +918,13 @@ export class Cycle extends Network {
     super.addEdge(initial_edge);
     this.loop_vertex = initial_edge.from;
     this.tip_vertex = initial_edge.to;
-    if (!is_directed && loop_vertex !== undefined) {
+    if (
+      !is_directed &&
+      loop_vertex !== undefined &&
+      this.hasVertex(loop_vertex)
+    ) {
       this.loop_vertex = loop_vertex;
-      this.tip_vertex = this.edge_list[0].pairVertex(this.loop_vertex)!;
+      this.tip_vertex = this.edge_list[0].pairVertex(loop_vertex)!;
     }
     this.is_closed = false;
   }
@@ -884,12 +937,20 @@ export class Cycle extends Network {
     return this.tip_vertex;
   }
 
+  get loop(): base_id {
+    return this.loop_vertex;
+  }
+
   /**
    * Returns true if the cycle is closed, otherwise returns false.
    * @returns boolean
    */
   get is_complete(): boolean {
     return this.is_closed;
+  }
+
+  get length(): number {
+    return this.vertices.size;
   }
 
   /**
@@ -959,12 +1020,12 @@ export class Cycle extends Network {
   }
 
   private canAdd(edge: EdgeArgs) {
-    const edge_has_tip =
+    const creates_loop =
       (edge.from === this.tip_vertex && !this.hasVertex(edge.to)) ||
       (!this.is_directed &&
         edge.to === this.tip_vertex &&
         !this.hasVertex(edge.from));
 
-    return !this.is_closed && edge_has_tip;
+    return !this.is_closed && creates_loop;
   }
 }
