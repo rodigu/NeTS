@@ -866,7 +866,7 @@ export class Network {
    */
   private isSameCycle(arr1: base_id[], arr2: base_id[]): boolean {
     if (arr1.length !== arr2.length) return false;
-    return arr1.every((element) => arr2.includes(element));
+    return arr1.every((element, index) => arr2[index] === element);
   }
 
   /**
