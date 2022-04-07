@@ -671,27 +671,38 @@ export class Network {
    * Returns a list with all triplets in the network.
    * @returns Cycle[]
    */
-  triplets(): base_id[][] {
-    const triplet_list: base_id[][] = [];
+  triplets(): Cycle[] {
+    const triplet_list: Cycle[] = [];
 
     const k2 = this.core(2);
 
     const { edges } = k2;
 
-    edges.forEach((edge) => {
-      const { from, to } = edge.vertices;
-      k2.neighbors(from).forEach((id) => {
-        if (edge.hasVertex(id)) return;
-        const triplet: base_id[] = [id, from, to];
-        const unsorted = [...triplet];
+    const { is_directed } = this;
 
+    edges.forEach((initial_edge) => {
+      const { from, to } = initial_edge.vertices;
+
+      const neighbors_from = k2.neighbors(from);
+      const neighbors_to = k2.neighbors(to);
+
+      let neighbors = neighbors_from;
+      if (neighbors_to.length < neighbors.length) neighbors = neighbors_to;
+
+      neighbors.forEach((id) => {
+        if (initial_edge.hasVertex(id)) return;
+        const triplet = new Cycle({
+          is_directed,
+          initial_edge: initial_edge.args,
+        });
+
+        if (triplet.addEdge(k2.edgeBetween(triplet.tip, id)?.args))
+          if (triplet.close(k2.edgeBetween(triplet.tip, triplet.loop)?.args))
         if (
-          k2.isSameCycle(unsorted, triplet.sort()) ||
-          (this.is_directed && !this.listHasCycle(triplet_list, triplet))
+              triplet_list.every((t) => !t.isSameAs(triplet)) &&
+              triplet.is_complete
         )
-          if (k2.hasEdge(id, to, true) && !this.is_directed)
             triplet_list.push(triplet);
-          else if (k2.hasEdge(id, to, false)) triplet_list.push(triplet);
       });
     });
 
