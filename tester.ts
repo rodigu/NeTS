@@ -236,4 +236,8 @@ function generalTesting() {
 }
 
 // compareQuadAlgorithms(nex.genCompleteNetwork(10), true);
-randomNetEfficiencyTest(20, { min: 20, max: 120 }, "rand_dense.json");
+// randomNetEfficiencyTest(20, { min: 20, max: 120 }, "rand_dense.json");
+
+const start = Date.now();
+const net = await nex.loadAdjacencyMatrix("./data/networkMatrix.csv");
+console.log(net.triplets().length, Date.now() - start);

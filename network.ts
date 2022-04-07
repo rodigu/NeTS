@@ -698,11 +698,11 @@ export class Network {
 
         if (triplet.addEdge(k2.edgeBetween(triplet.tip, id)?.args))
           if (triplet.close(k2.edgeBetween(triplet.tip, triplet.loop)?.args))
-        if (
+            if (
               triplet_list.every((t) => !t.isSameAs(triplet)) &&
               triplet.is_complete
-        )
-            triplet_list.push(triplet);
+            )
+              triplet_list.push(triplet);
       });
     });
 
