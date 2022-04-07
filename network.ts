@@ -860,27 +860,6 @@ export class Network {
   }
 
   /**
-   * Checks if a list of triplets contains a certain triplet
-   * @param  {Cycle[]} triplet_arr
-   * @param  {Cycle} triplet
-   * @returns boolean
-   */
-  private listHasCycle(cycle_arr: base_id[][], cycle: base_id[]): boolean {
-    return cycle_arr.some((trip) => this.isSameCycle(cycle, trip));
-  }
-
-  /**
-   * Compares two triplets (directed), returns whether they are the same.
-   * @param  {Cycle} arr1
-   * @param  {Cycle} arr2
-   * @returns boolean
-   */
-  private isSameCycle(arr1: base_id[], arr2: base_id[]): boolean {
-    if (arr1.length !== arr2.length) return false;
-    return arr1.every((element, index) => arr2[index] === element);
-  }
-
-  /**
    * Generates a new ID for an edge being generated.
    * @returns number
    */
