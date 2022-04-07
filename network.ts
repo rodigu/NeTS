@@ -944,6 +944,10 @@ export class Cycle extends Network {
     return 0;
   }
 
+  get path(): base_id[] {
+    return [...this.vertices.keys()];
+  }
+
   /**
    * Returns true if the cycle is closed, otherwise returns false.
    * @returns boolean
