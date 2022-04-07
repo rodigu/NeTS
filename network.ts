@@ -70,6 +70,12 @@ export class Network {
       .reduce((prev, curr) => prev + curr);
   }
 
+  get product(): number {
+    return this.edge_list
+      .map((e) => e.weight)
+      .reduce((weight1, weight2) => weight1 * weight2);
+  }
+
   /**
    * List of vertices with negative weight.
    * @returns Vertex[]
@@ -205,14 +211,6 @@ export class Network {
 
     if (!this.is_multigraph && this.hasEdge(args.from, args.to)) return false;
     // throw { message: ERROR.NOT_MULTIGRAPH };
-
-    if (!this.is_directed) {
-      const sorted_vertices = [args.from, args.to].sort();
-      const unsorted_vertices = [args.from, args.to];
-      if (unsorted_vertices[0] !== sorted_vertices[0])
-        args.weight = 1 / args.weight;
-      [args.from, args.to] = sorted_vertices;
-    }
 
     this.edges.set(args.id, new Edge(args));
     return true;
