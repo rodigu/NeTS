@@ -1007,7 +1007,9 @@ export class Cycle extends Network {
         edge.to === this.tip_vertex &&
         edge.from === this.loop_vertex);
 
-    return !this.is_closed && edge_has_tip_and_loop_vertex;
+    return (
+      !this.is_closed && edge_has_tip_and_loop_vertex && this.vertices.size > 2
+    );
   }
 
   private canAdd(edge: EdgeArgs) {
