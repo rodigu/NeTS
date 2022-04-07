@@ -902,6 +902,7 @@ export class Cycle extends Network {
   private loop_vertex: base_id;
   private tip_vertex: base_id;
   private is_closed: boolean;
+  private dynamic_product: number;
 
   constructor(args: {
     is_directed: boolean;
@@ -922,6 +923,8 @@ export class Cycle extends Network {
       this.tip_vertex = this.edge_list[0].pairVertex(loop_vertex)!;
     }
     this.is_closed = false;
+    this.dynamic_product = 1;
+    this.updateProduct(initial_edge);
   }
 
   /**
@@ -934,6 +937,11 @@ export class Cycle extends Network {
 
   get loop(): base_id {
     return this.loop_vertex;
+  }
+
+  get product(): number {
+    if (this.is_closed) return this.dynamic_product;
+    return 0;
   }
 
   /**
@@ -961,6 +969,8 @@ export class Cycle extends Network {
         this.tip_vertex = edge.from;
       else this.tip_vertex = edge.to;
 
+      this.updateProduct(edge);
+
       return true;
     }
 
@@ -978,6 +988,7 @@ export class Cycle extends Network {
       super.addEdge(edge);
       this.is_closed = true;
       this.tip_vertex = this.loop_vertex;
+      this.updateProduct(edge);
       return true;
     }
 
@@ -1002,6 +1013,11 @@ export class Cycle extends Network {
         );
       });
     });
+  }
+
+  private updateProduct(edge: EdgeArgs) {
+    const weight = edge.weight ?? 1;
+    this.dynamic_product *= this.tip_vertex === edge.to ? weight : 1 / weight;
   }
 
   private canCloseWith(edge: EdgeArgs): boolean {
